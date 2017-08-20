@@ -1,14 +1,12 @@
 #include "Player.h"
-#include <algorithm>
-
 
 Player::Player(bool inIsLocalPlayer, bool inBottomSide)
 {
 	m_isLocalPlayer = inIsLocalPlayer;
+	m_isBottomPlayer = inBottomSide;
+	m_MachineGun = MachineGun(Vector2(0, -(float)inBottomSide));
 	CreateBody(inBottomSide);
 }
-
-Player::~Player() {}
 
 
 void Player::Update(float inDeltaTime)
@@ -19,12 +17,16 @@ void Player::Update(float inDeltaTime)
 		CheckForMessage();
 
 	Move(inDeltaTime);
+
+	m_MachineGun.Update(m_CurrentPlayerActions.Firing_Machinegun, m_Shape.getPosition(), inDeltaTime);
 }
 
 void Player::Render(sf::RenderWindow* inRenderWindow)
 {
-	inRenderWindow->draw(*m_pShape);
+	inRenderWindow->draw(m_Shape);
+	m_MachineGun.Render(inRenderWindow);
 }
+
 
 void Player::HandleInput(float inDeltaTime)
 {
@@ -38,47 +40,47 @@ void Player::HandleInput(float inDeltaTime)
 
 	if (KEYPRESS_RIGHT) 
 		m_CurrentPlayerActions.Moving_Right = true;
+
+	if (KEYPRESS_FIRE)
+		m_CurrentPlayerActions.Firing_Machinegun = true;
 }
 
 
 void Player::CreateBody(bool inBottomSide)
 {
-	m_pShape = new sf::RectangleShape();
+	m_Shape = sf::RectangleShape();
 
-	m_pShape->setSize(Vector2(PLAYER_SIZE_X, PLAYER_SIZE_Y));
-	m_pShape->setOutlineThickness(-PLAYER_OUTLINE_THICKNESS);
+	m_Shape.setSize(Vector2(PLAYER_SIZE_X, PLAYER_SIZE_Y));
+	m_Shape.setOutlineThickness(-PLAYER_OUTLINE_THICKNESS);
 	
-	m_pShape->setOutlineColor(sf::Color(PLAYER_OUTLINE_RGB));
+	m_Shape.setOutlineColor(sf::Color(PLAYER_OUTLINE_RGB));
 
 	if (m_isLocalPlayer)
-		m_pShape->setFillColor(sf::Color(LOCAL_PLAYER_RGB));
+		m_Shape.setFillColor(sf::Color(LOCAL_PLAYER_RGB));
 	else
-		m_pShape->setFillColor(sf::Color(OTHER_PLAYER_RGB));
+		m_Shape.setFillColor(sf::Color(OTHER_PLAYER_RGB));
 
-	m_pShape->setOrigin(m_pShape->getSize() / 2.0f);
+	m_Shape.setOrigin(m_Shape.getSize() / 2.0f);
 
 	if (inBottomSide)
-		m_pShape->setPosition(Vector2(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT - (PLAYER_SIZE_Y /2.0f)- PLAYER_DISTANCE_FROM_BORDER));
+		m_Shape.setPosition(Vector2(WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT - (PLAYER_SIZE_Y /2.0f)- PLAYER_DISTANCE_FROM_BORDER));
 	else
-		m_pShape->setPosition(Vector2(WINDOW_WIDTH / 2.0f, PLAYER_SIZE_X - PLAYER_DISTANCE_FROM_BORDER)); 
+		m_Shape.setPosition(Vector2(WINDOW_WIDTH / 2.0f, PLAYER_SIZE_X - PLAYER_DISTANCE_FROM_BORDER)); 
 }
 
 
 void Player::Move(float inDeltaTime)
 {
+	// Move the player in a direction
 	if (m_CurrentPlayerActions.Moving_Left)
-		m_pShape->setPosition(Vector2(m_pShape->getPosition().x - (PLAYER_MOVE_SPEED * inDeltaTime), m_pShape->getPosition().y));
+		m_Shape.setPosition(Vector2(m_Shape.getPosition().x - (PLAYER_MOVE_SPEED * inDeltaTime), m_Shape.getPosition().y));
 
 	if (m_CurrentPlayerActions.Moving_Right)
-		m_pShape->setPosition(Vector2(m_pShape->getPosition().x + (PLAYER_MOVE_SPEED * inDeltaTime), m_pShape->getPosition().y));
-}
+		m_Shape.setPosition(Vector2(m_Shape.getPosition().x + (PLAYER_MOVE_SPEED * inDeltaTime), m_Shape.getPosition().y));
 
-void Player::FireMachineGun(float inDeltaTime)
-{
-
-}
-
-void Player::FireRocket(float inDeltaTime)
-{
-
+	// Make sure the player doesn't go outside of the screen
+	if (m_Shape.getPosition().x < 0)
+		m_Shape.setPosition(Vector2(0, m_Shape.getPosition().y));
+	else if (m_Shape.getPosition().x > WINDOW_WIDTH)
+		m_Shape.setPosition(Vector2(WINDOW_WIDTH, m_Shape.getPosition().y));
 }

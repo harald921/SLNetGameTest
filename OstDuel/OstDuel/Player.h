@@ -2,6 +2,7 @@
 
 #include "SFML\Graphics.hpp"
 #include "Defines.h"
+#include "MachineGun.h"
 
 struct SCurrentPlayerActions
 {
@@ -16,13 +17,12 @@ class Player
 {
 public:
 	Player(bool inIsLocalPlayer, bool inBottomSide);
-	~Player();
+	~Player() {}
 
 	void Update(float inDeltaTime);
 	void Render(sf::RenderWindow* inRenderWindow);
 
 private:
-
 	
 	void HandleInput(float inDeltaTime);
 	void CheckForMessage() { } // Denna är till för networking, och den ska användas istället för HandleMovement för att sätta spelarens olika PlayerActions
@@ -30,13 +30,15 @@ private:
 	void CreateBody(bool inBottomSide);
 
 	void Move(float inDeltaTime);
-	void FireMachineGun(float inDeltaTime);
-	void FireRocket(float inDeltaTime);
 
 	bool m_isLocalPlayer;
+	bool m_isBottomPlayer;
 
 	SCurrentPlayerActions m_CurrentPlayerActions;
 
-	sf::RectangleShape* m_pShape;
+	sf::RectangleShape m_Shape;
+
+	MachineGun m_MachineGun;
+
 };
 
